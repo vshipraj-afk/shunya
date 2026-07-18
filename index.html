@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Shunya</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101218">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>
+if ('serviceWorker' in navigator && location.protocol === 'https:')
+  navigator.serviceWorker.register('sw.js');
+</script>
+<style>
+  /* ============================================================
+     DESIGN TOKENS — re-theme the whole app by editing this block
+     ============================================================ */
+  :root{
+    --bg:#101218; --surface:#191c25; --surface2:#222633;
+    --ink:#e9ecf2; --ink-dim:#8b93a5;
+    --brand:#8cd2ff; --brand-ink:#0b1520;
+    --ok:#7fd4a0; --warn:#e8b35c; --bad:#e07b7b;
+    --radius:14px; --pad:16px;
+    font-size:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);
+    color:var(--ink);display:flex;flex-direction:column;overflow:hidden;user-select:none}
+
+  /* ---------- header ---------- */
+  header{flex:0 0 auto;display:flex;align-items:center;gap:12px;
+    padding:calc(env(safe-area-inset-top) + 14px) var(--pad) 14px;
+    background:var(--surface);border-bottom:1px solid rgba(255,255,255,.06)}
+  header .mark{width:30px;height:30px;border:3px solid var(--brand);border-radius:50%}
+  header h1{font-size:1.05rem;font-weight:600;letter-spacing:.02em}
+  header .spacer{flex:1}
+
+  /* ---------- pages ---------- */
+  main{flex:1;overflow:auto;padding:var(--pad);-webkit-overflow-scrolling:touch}
+  .page{display:none;flex-direction:column;gap:12px;max-width:640px;margin:0 auto;width:100%}
+  .page.active{display:flex}
+  .card{background:var(--surface);border-radius:var(--radius);padding:var(--pad);
+    border:1px solid rgba(255,255,255,.05)}
+  .card h2{font-size:.95rem;margin-bottom:8px}
+  .card p{font-size:.86rem;color:var(--ink-dim);line-height:1.6}
+  .empty{text-align:center;padding:44px 20px;color:var(--ink-dim)}
+  .empty .ring{width:56px;height:56px;border:4px solid var(--brand);border-radius:50%;
+    margin:0 auto 16px;opacity:.7}
+
+  /* ---------- generic list (for whatever the idea stores) ---------- */
+  .item{display:flex;align-items:center;gap:12px;background:var(--surface);
+    border-radius:var(--radius);padding:13px var(--pad);border:1px solid rgba(255,255,255,.05)}
+  .item .txt{flex:1;font-size:.92rem}
+  .item .sub{font-size:.72rem;color:var(--ink-dim);margin-top:2px}
+  .item button{background:none;border:none;color:var(--ink-dim);font-size:1rem;cursor:pointer;padding:6px}
+
+  /* ---------- inputs & buttons ---------- */
+  .row{display:flex;gap:10px}
+  input[type=text],textarea,select{width:100%;background:var(--surface2);color:var(--ink);
+    border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;
+    font-family:inherit;font-size:.92rem;outline:none}
+  input:focus,textarea:focus{border-color:var(--brand)}
+  .btn{background:var(--brand);color:var(--brand-ink);border:none;border-radius:10px;
+    padding:12px 18px;font-weight:700;font-size:.92rem;cursor:pointer;font-family:inherit}
+  .btn.ghost{background:var(--surface2);color:var(--ink)}
+  .btn:active{transform:scale(.98)}
+
+  /* ---------- bottom tab bar ---------- */
+  nav{flex:0 0 auto;display:flex;background:var(--surface);
+    border-top:1px solid rgba(255,255,255,.06);
+    padding-bottom:env(safe-area-inset-bottom)}
+  nav button{flex:1;background:none;border:none;color:var(--ink-dim);cursor:pointer;
+    padding:10px 0 12px;font-family:inherit;font-size:.68rem;display:flex;
+    flex-direction:column;align-items:center;gap:3px}
+  nav button .ic{font-size:1.25rem}
+  nav button.on{color:var(--brand)}
+
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);
+    background:var(--surface2);color:var(--ink);padding:10px 18px;border-radius:20px;
+    font-size:.82rem;opacity:0;transition:.25s;pointer-events:none;z-index:99;
+    border:1px solid rgba(255,255,255,.12)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="mark"></div>
+  <h1 id="app-title">Shunya</h1>
+  <div class="spacer"></div>
+</header>
+
+<main>
+  <!-- ============ PAGE: HOME — the idea's main screen goes here ============ -->
+  <section class="page active" data-page="home">
+    <div class="empty">
+      <div class="ring"></div>
+      <p>This is Shunya — a working app waiting for its idea.<br>
+      Everything already works: install, offline, storage, navigation.</p>
+    </div>
+    <div class="row">
+      <input type="text" id="demo-in" placeholder="Add something to prove storage works…">
+      <button class="btn" id="demo-add">Add</button>
+    </div>
+    <div id="demo-list" style="display:flex;flex-direction:column;gap:8px"></div>
+  </section>
+
+  <!-- ============ PAGE: SECOND — detail/history/whatever ============ -->
+  <section class="page" data-page="two">
+    <div class="card"><h2>Second screen</h2>
+      <p>Reserved for the idea's second surface — history, results, a map, a feed. Rename the tab below when we know.</p></div>
+  </section>
+
+  <!-- ============ PAGE: SETTINGS ============ -->
+  <section class="page" data-page="settings">
+    <div class="card"><h2>App name</h2>
+      <input type="text" id="set-name" placeholder="Shunya"></div>
+    <div class="card"><h2>Data</h2>
+      <p id="data-count" style="margin-bottom:10px"></p>
+      <button class="btn ghost" id="wipe">Delete all data</button></div>
+  </section>
+</main>
+
+<nav>
+  <button data-nav="home" class="on"><span class="ic">◉</span>Home</button>
+  <button data-nav="two"><span class="ic">▤</span>Second</button>
+  <button data-nav="settings"><span class="ic">⚙</span>Settings</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   PLUMBING — storage, navigation, toast. The idea sits on top.
+   ============================================================ */
+const store = {
+  get(k,d){ try{const v=localStorage.getItem('shunya.'+k);return v===null?d:JSON.parse(v)}catch{return d} },
+  set(k,v){ try{localStorage.setItem('shunya.'+k,JSON.stringify(v))}catch{} }
+};
+const $ = s=>document.querySelector(s);
+const toast = t=>{ const el=$('#toast'); el.textContent=t; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),1800); };
+
+/* navigation */
+document.querySelectorAll('nav button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    b.classList.add('on');
+    document.querySelector(`.page[data-page="${b.dataset.nav}"]`).classList.add('active');
+  };
+});
+
+/* app name is user-settable (also proves settings persistence) */
+const applyName = ()=>{ const n=store.get('name','Shunya'); $('#app-title').textContent=n; $('#set-name').value=n; };
+$('#set-name').oninput = e=>{ store.set('name', e.target.value||'Shunya'); applyName(); };
+applyName();
+
+/* ============================================================
+   DEMO FEATURE — a persistent list. Replace with the real idea.
+   The pattern (load → render → mutate → save) is the pattern
+   almost every app feature follows.
+   ============================================================ */
+let items = store.get('items', []);
+const renderItems = ()=>{
+  const box=$('#demo-list'); box.innerHTML='';
+  items.forEach((it,i)=>{
+    const d=document.createElement('div'); d.className='item';
+    d.innerHTML=`<div class="txt">${String(it.t).replace(/</g,'&lt;')}
+      <div class="sub">${new Date(it.ts).toLocaleString('en-IN')}</div></div>
+      <button title="Delete">✕</button>`;
+    d.querySelector('button').onclick=()=>{ items.splice(i,1); store.set('items',items); renderItems(); };
+    box.appendChild(d);
+  });
+  $('#data-count').textContent = items.length+' item(s) stored on this device.';
+};
+$('#demo-add').onclick=()=>{
+  const v=$('#demo-in').value.trim(); if(!v) return;
+  items.unshift({t:v, ts:Date.now()}); store.set('items',items);
+  $('#demo-in').value=''; renderItems(); toast('Saved on device');
+};
+$('#demo-in').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#demo-add').click(); });
+$('#wipe').onclick=()=>{ items=[]; store.set('items',items); renderItems(); toast('All data deleted'); };
+renderItems();
+</script>
+</body>
+</html>
